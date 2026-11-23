@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<!--
+  Editable short made by viral-clips-radar (pipeline/edit.py). HyperFrames composition, 1080x1920.
+  Layers (bottom to top): blurred background, facecam, gameplay, subtitles, YOUR EDITS.
+  Only edit between the EDITS markers: `edit.py new` keeps those two blocks when it rebuilds the base.
+  Safe zones: keep text and stickers out of y 0-200 (app top bar) and y 1600-1920 (caption and buttons),
+  and away from the right 120 px (like/comment buttons).
+-->
+<style>
+  html, body { margin: 0; background: #000; }
+  #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #000;
+          font-family: "Arial Black", "Arial", "Helvetica Neue", sans-serif; font-weight: 900; }
+  .clip { position: absolute; }
+  /* base layers (built by edit.py from the original horizontal cut) */
+  #bg   { left: 0; top: 0; width: 1080px; height: 1920px; object-fit: cover; }
+  #cam  { left: 0; top: 200px; width: 1080px; height: 702px; object-fit: cover; }
+  #gamebox { position: absolute; left: 0; top: {{GAME_TOP}}px; width: 1080px; height: {{GAME_H}}px; overflow: hidden; }
+  #game { left: 0; top: 0; width: 1080px; height: {{GAME_H}}px; object-fit: cover; transform-origin: 50% 50%; }
+  /* subtitles: centered on the cam/gameplay seam */
+  .sub  { left: 70px; width: 940px; top: {{SUB_Y}}px; transform: translateY(-50%); text-align: center; font-size: 68px; line-height: 1.05;
+          color: #fff; -webkit-text-stroke: 14px #000; paint-order: stroke fill; text-shadow: 0 6px 0 #000; }
+
+  /* ready-made styles for edits */
+  .hook    { left: 60px; width: 960px; top: 230px; text-align: center; font-size: 78px; line-height: 1.05; color: #fff;
+             -webkit-text-stroke: 14px #000; paint-order: stroke fill; text-shadow: 0 8px 0 #000; opacity: 0; }
+  .hook .hl{ background: #ffde00; color: #000; -webkit-text-stroke: 0; padding: 0 18px; border-radius: 14px; text-shadow: none; }
+  .label   { padding: 14px 26px; font-size: 54px; color: #000; background: #fff; border: 6px solid #000; border-radius: 22px;
+             box-shadow: 0 10px 0 #000; opacity: 0; }
+  .sticker { font-size: 210px; line-height: 1; opacity: 0; filter: drop-shadow(0 10px 0 rgba(0,0,0,.6)); }
+  .img     { opacity: 0; filter: drop-shadow(0 10px 0 rgba(0,0,0,.6)); }
+  .bar     { left: 0; top: 1592px; width: 1080px; height: 8px; background: #ffde00; transform-origin: 0 50%; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="root" data-width="1080" data-height="1920">
+
+  <video id="bg" class="clip" src="assets/bg.mp4" data-start="0" data-duration="{{DURATION}}" muted data-track-index="0"></video>
+{{CAM_HTML}}
+  <div id="gamebox"><video id="game" class="clip" src="assets/game.mp4" data-start="0" data-duration="{{DURATION}}" data-has-audio="true" data-track-index="2"></video></div>
+
+  <!-- subtitles (from work/subs/<clip>.json; swear words already masked) -->
+{{SUBS_HTML}}
+
+  <!-- EDITS:HTML START -->
+  <!-- EDITS:HTML END -->
+
+  <script src="gsap.min.js"></script>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const D = {{DURATION}};
+
+    // subtitles pop in softly
+    document.querySelectorAll('.sub').forEach(el => {
+      tl.fromTo(el, { scale: 0.92 }, { scale: 1, duration: 0.12, ease: 'back.out(3)' }, +el.dataset.start);
+    });
+
+    // ---- helpers for edits ----
+    // pop(sel, t, dur): appears with a bounce at t and leaves at t+dur
+    function pop(sel, t, dur = 2, opts = {}) {
+      tl.fromTo(sel, { opacity: 0, scale: opts.from ?? 0.3, rotation: opts.rot ?? 0 },
+                     { opacity: 1, scale: 1, rotation: opts.rotTo ?? 0, duration: 0.3, ease: 'back.out(3)' }, t);
+      tl.to(sel, { opacity: 0, scale: 0.7, duration: 0.25 }, t + dur - 0.25);
+    }
+    // shake(sel, t, times): wobbles an element (good right after a pop)
+    function shake(sel, t, times = 5, deg = 8) {
+      tl.fromTo(sel, { rotation: -deg }, { rotation: deg, duration: 0.1, yoyo: true, repeat: times, ease: 'sine.inOut' }, t);
+    }
+    // punch(t, hold, scale): zooms into the gameplay only (not the cam or the subtitles)
+    function punch(t, hold = 1.5, scale = 1.15) {
+      tl.to('#game', { scale, duration: 0.15, ease: 'power2.out' }, t);
+      tl.to('#game', { scale: 1, duration: 0.45, ease: 'power2.inOut' }, t + hold);
+    }
+    // hook(sel, dur): the opening title, from 0.1 s
+    function hook(sel, dur = 3.5) {
+      tl.fromTo(sel, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(2.5)' }, 0.1);
+      tl.to(sel, { opacity: 0, y: -40, duration: 0.3 }, dur);
+    }
+    // progress(sel): a bar that fills across the whole clip
+    function progress(sel) { tl.fromTo(sel, { scaleX: 0 }, { scaleX: 1, duration: D, ease: 'none' }, 0); }
+
+    // EDITS:JS START
+    // EDITS:JS END
+
+    window.__timelines = window.__timelines || {};
+    window.__timelines['root'] = tl;
+  </script>
+</div>
+</body>
+</html>

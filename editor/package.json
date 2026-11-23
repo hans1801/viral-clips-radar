@@ -1,0 +1,10 @@
+{
+  "name": "viral-clips-radar-editor",
+  "private": true,
+  "type": "module",
+  "description": "Optional edit layer: each short becomes a HyperFrames project (clip + stickers, text, sound effects) with a localhost preview.",
+  "dependencies": {
+    "gsap": "3.15.0",
+    "hyperframes": "0.8.166"
+  }
+}

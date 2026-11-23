@@ -1,0 +1,16 @@
+# Outputs and downloaded material (heavy, and the streamer's copyright)
+clips/
+
+# Python environment and the binaries setup installs
+.venv/
+tools/
+
+# Edit layer: Node packages (installed by setup)
+editor/node_modules/
+editor/.preview
+
+# System / Python
+.DS_Store
+Thumbs.db
+__pycache__/
+*.pyc
